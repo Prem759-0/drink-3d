@@ -51,8 +51,8 @@ export default function ProductBottleScroll({ product }: Props) {
     const iW = img.naturalWidth;
     const iH = img.naturalHeight;
 
-    // "contain" fit
-    const scale = Math.min(cW / iW, cH / iH);
+    // "cover" fit (fills entire screen)
+    const scale = Math.max(cW / iW, cH / iH);
     const dW = iW * scale;
     const dH = iH * scale;
     const dx = (cW - dW) / 2;

@@ -5,46 +5,26 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [isAtTop, setIsAtTop] = useState(true);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isPastCanvas, setIsPastCanvas] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsAtTop(latest < 60);
-
-    if (latest > 60) {
-      setIsScrolling(true);
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 250); // wait 250ms after scroll stops
-    } else {
-      setIsScrolling(false);
-    }
+    // 500vh is the height of the ProductBottleScroll container.
+    // The canvas ends when scroll reaches approx 5 * window.innerHeight.
+    const canvasHeight = typeof window !== "undefined" ? window.innerHeight * 5 : 5000;
+    setIsPastCanvas(latest > canvasHeight - 100);
   });
-
-  useEffect(() => {
-    return () => {
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, []);
 
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: isScrolling ? 0 : 1 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-      className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+      className="fixed top-0 left-0 right-0 z-50 transition-colors duration-500"
       style={{
-        pointerEvents: isScrolling ? "none" : "auto",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        background: isAtTop
-          ? "rgba(10,10,10,0.2)"
-          : "rgba(10,10,10,0.85)",
-        borderBottom: isAtTop
-          ? "1px solid transparent"
-          : "1px solid rgba(255,255,255,0.08)",
+        backdropFilter: isPastCanvas ? "blur(20px)" : "none",
+        WebkitBackdropFilter: isPastCanvas ? "blur(20px)" : "none",
+        background: isPastCanvas ? "rgba(10,10,10,0.85)" : "transparent",
+        borderBottom: isPastCanvas ? "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

@@ -1,32 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsAtTop(latest < 60);
+
+    if (latest > 60) {
+      setIsScrolling(true);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 250); // wait 250ms after scroll stops
+    } else {
+      setIsScrolling(false);
+    }
+  });
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    return () => {
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
   }, []);
 
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      animate={{ y: 0, opacity: isScrolling ? 0 : 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+      className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
       style={{
+        pointerEvents: isScrolling ? "none" : "auto",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        background: scrolled
-          ? "rgba(10,10,10,0.85)"
-          : "rgba(10,10,10,0.2)",
-        borderBottom: scrolled
-          ? "1px solid rgba(255,255,255,0.08)"
-          : "1px solid transparent",
+        background: isAtTop
+          ? "rgba(10,10,10,0.2)"
+          : "rgba(10,10,10,0.85)",
+        borderBottom: isAtTop
+          ? "1px solid transparent"
+          : "1px solid rgba(255,255,255,0.08)",
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

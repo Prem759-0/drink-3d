@@ -14,6 +14,9 @@ interface TextSection {
   rangeIn: [number, number];
   rangeOut: [number, number];
   align: "left" | "right" | "center";
+  features?: string[];
+  stats?: { label: string; val: string }[];
+  buyNow?: Product["buyNowSection"];
 }
 
 export default function ProductTextOverlays({ product }: Props) {
@@ -36,18 +39,21 @@ export default function ProductTextOverlays({ product }: Props) {
       rangeIn: [0.22, 0.3],
       rangeOut: [0.42, 0.5],
       align: "left",
+      features: product.features,
     },
     {
       ...product.section3,
       rangeIn: [0.44, 0.52],
       rangeOut: [0.64, 0.72],
       align: "right",
+      stats: product.stats,
     },
     {
       ...product.section4,
       rangeIn: [0.66, 0.74],
       rangeOut: [0.9, 0.98],
       align: "center",
+      buyNow: product.buyNowSection,
     },
   ];
 
@@ -128,6 +134,69 @@ function TextOverlay({
           >
             {section.subtitle}
           </p>
+        )}
+
+        {/* Features List */}
+        {section.features && (
+          <div className="mt-8 flex flex-col gap-4">
+            {section.features.map((feat, idx) => (
+              <div key={idx} className="flex items-center gap-4">
+                <div 
+                  className="w-3 h-3 rounded-full shadow-lg" 
+                  style={{ backgroundColor: themeColor, boxShadow: `0 0 15px ${themeColor}` }} 
+                />
+                <span className="text-xl md:text-2xl text-white font-semibold tracking-wide drop-shadow-md">
+                  {feat}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        {section.stats && (
+          <div className="mt-10 flex flex-wrap gap-4">
+            {section.stats.map((stat, idx) => (
+              <div 
+                key={idx} 
+                className="flex flex-col items-center justify-center py-4 px-6 rounded-2xl" 
+                style={{ 
+                  background: "rgba(0,0,0,0.5)", 
+                  backdropFilter: "blur(12px)", 
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
+                }}
+              >
+                <span className="text-4xl md:text-5xl font-black mb-1" style={{ color: themeColor }}>
+                  {stat.val}
+                </span>
+                <span className="text-xs md:text-sm uppercase tracking-widest text-white/70 font-medium">
+                  {stat.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Buy Now Section */}
+        {section.buyNow && (
+          <div className="mt-12 flex flex-col items-center">
+            <div className="text-4xl font-black mb-2">{section.buyNow.price} <span className="text-xl text-white/60 font-medium">{section.buyNow.unit}</span></div>
+            <div className="flex gap-3 mb-6">
+              {section.buyNow.processingParams.map((param, idx) => (
+                <span key={idx} className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide" style={{ border: `1px solid ${themeColor}80`, color: themeColor }}>
+                  {param}
+                </span>
+              ))}
+            </div>
+            <button 
+              className="px-10 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105 active:scale-95"
+              style={{ background: themeColor, color: "#fff", boxShadow: `0 10px 30px ${themeColor}80` }}
+            >
+              Add to Cart
+            </button>
+          </div>
         )}
       </motion.div>
     </div>

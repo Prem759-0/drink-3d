@@ -6,13 +6,14 @@ import { Product } from "@/data/products";
 
 interface Props {
   product: Product;
+  onLoadComplete?: () => void;
 }
 
 function padNum(n: number, pad: number): string {
   return String(n).padStart(pad, "0");
 }
 
-export default function ProductBottleScroll({ product }: Props) {
+export default function ProductBottleScroll({ product, onLoadComplete }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -86,10 +87,21 @@ export default function ProductBottleScroll({ product }: Props) {
         loadedCountRef.current++;
         // Draw first frame as soon as it's ready
         if (i === 0) drawFrame(0);
+        
+        if (loadedCountRef.current === total) {
+          onLoadComplete?.();
+        }
+      };
+      img.onerror = () => {
+        // Even if an image fails, we count it so we don't hang forever
+        loadedCountRef.current++;
+        if (loadedCountRef.current === total) {
+          onLoadComplete?.();
+        }
       };
       imagesRef.current[i] = img;
     }
-  }, [product, getFrameUrl, drawFrame]);
+  }, [product, getFrameUrl, drawFrame, onLoadComplete]);
 
   // Canvas resize listener
   useEffect(() => {

@@ -30,51 +30,39 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          {/* SVG Logo */}
+          {/* Minimalist Lightning Logo */}
           <svg
-            width="36"
-            height="36"
-            viewBox="0 0 36 36"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="flex-shrink-0"
+            className="flex-shrink-0 text-orange-500"
           >
-            <defs>
-              <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#f97316" />
-                <stop offset="100%" stopColor="#ec4899" />
-              </linearGradient>
-            </defs>
-            {/* Banana-lightning hybrid */}
             <path
-              d="M18 3C10 3 4 9 4 18C4 24 7 29 12 31.5C14 25 15 20 14 15C13.5 12 15 9 18 8C21 7 24 8.5 25 11C26.5 14 25 18 22 20C20 21.5 17 22 15 23.5L20 33C25 31 32 26 32 18C32 9 26 3 18 3Z"
-              fill="url(#logoGrad)"
-            />
-            <path
-              d="M20 11L15 20H19L14 29L24 16H20L25 11Z"
-              fill="white"
-              fillOpacity="0.9"
+              d="M13 3L4 14H12L11 21L20 10H12L13 3Z"
+              fill="currentColor"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
             />
           </svg>
-          <span
-            className="text-xl font-black tracking-tight"
-            style={{
-              background: "linear-gradient(90deg, #f97316, #ec4899)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Nano Banana
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-widest leading-none text-white/50 mb-0.5">
+              The Future
+            </span>
+            <span className="text-xl font-black uppercase tracking-tight leading-none text-white">
+              RAW.
+            </span>
+          </div>
         </div>
 
         {/* Nav Links */}
-        <div className="hidden md:flex items-center gap-8">
-          {["Products", "Story", "Science"].map((link) => (
+        <div className="hidden lg:flex items-center gap-10">
+          {["Juices", "Our Story", "Health Benefits", "Shop"].map((link) => (
             <button
               key={link}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-200"
+              className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors duration-300"
             >
               {link}
             </button>
@@ -82,27 +70,16 @@ export default function Navbar() {
         </div>
 
         {/* CTA */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          className="relative px-5 py-2.5 rounded-full text-sm font-semibold text-white overflow-hidden"
+        <button
+          className="px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-[0.15em] text-white transition-all duration-300 hover:scale-105"
           style={{
-            background: "linear-gradient(135deg, #f97316, #ec4899)",
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            backdropFilter: "blur(10px)",
           }}
         >
-          <span className="relative z-10">Order Now</span>
-          {/* Glow */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "linear-gradient(135deg, #f97316, #ec4899)",
-              filter: "blur(12px)",
-              opacity: 0,
-            }}
-            whileHover={{ opacity: 0.6 }}
-            transition={{ duration: 0.3 }}
-          />
-        </motion.button>
+          Order Now
+        </button>
       </div>
     </motion.nav>
   );

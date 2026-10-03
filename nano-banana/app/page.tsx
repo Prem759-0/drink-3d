@@ -29,14 +29,16 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const product = products[currentIndex];
 
-  // Reset scroll on product change
+  // Reset scroll and loading state on product change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setQuantity(1);
     setAddedToCart(false);
+    setIsLoaded(false);
   }, [currentIndex]);
 
   const goTo = useCallback((index: number) => {
@@ -53,6 +55,65 @@ export default function Home() {
       className="relative min-h-screen"
       style={{ background: "#0a0a0a" }}
     >
+      {/* Global Loader Overlay */}
+      <AnimatePresence>
+        {!isLoaded && (
+          <motion.div
+            key="global-loader"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0a0a0a]"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: EASE_CURVE }}
+          >
+            <motion.div
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.5, 1, 0.5]
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-orange-500 mb-6"
+              >
+                <path
+                  d="M13 3L4 14H12L11 21L20 10H12L13 3Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40 mb-2">
+                Loading
+              </span>
+              <span className="text-sm font-black uppercase tracking-[0.2em] text-white">
+                The Future Raw.
+              </span>
+            </div>
+            
+            {/* Progress Bar Track */}
+            <div className="w-48 h-[2px] bg-white/10 mt-8 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-white/50 rounded-full"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Ambient background glow that changes with product */}
       <AnimatePresence>
         <motion.div
@@ -83,7 +144,10 @@ export default function Home() {
           <section className="relative">
             {/* Scroll container with canvas */}
             <div className="relative">
-              <ProductBottleScroll product={product} />
+              <ProductBottleScroll 
+                product={product} 
+                onLoadComplete={() => setIsLoaded(true)}
+              />
               {/* Text overlays absolutely positioned over the scroll area */}
               <div className="absolute inset-0 h-full">
                 <ProductTextOverlays product={product} />
@@ -122,86 +186,98 @@ export default function Home() {
             </motion.div>
           </section>
 
-          {/* ===== PRODUCT DETAILS SECTION ===== */}
-          <section className="py-24 px-6">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* ===== PREMIUM STORY SECTION ===== */}
+          <section className="py-20 lg:py-32 px-6 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
+                
                 {/* Left — Text */}
                 <motion.div
                   variants={SLIDE_UP}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="lg:col-span-7"
                 >
-                  <span
-                    className="text-xs font-bold uppercase tracking-[0.25em] mb-4 inline-block"
-                    style={{ color: product.themeColor }}
-                  >
-                    The Story
-                  </span>
-                  <h2 className="text-4xl md:text-6xl font-black leading-tight mb-6 text-white">
+                  <div className="flex items-center gap-4 mb-6 md:mb-8">
+                    <div className="h-[1px] w-8 md:w-12" style={{ background: product.themeColor }} />
+                    <span
+                      className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em]"
+                      style={{ color: product.themeColor }}
+                    >
+                      The Story
+                    </span>
+                  </div>
+                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-6 md:mb-8 text-white tracking-tight">
                     {product.detailsSection.title}
                   </h2>
-                  <p className="text-white/60 text-lg leading-relaxed mb-10">
+                  <p className="text-white/60 text-base md:text-lg lg:text-xl leading-relaxed mb-10 md:mb-12 font-medium max-w-2xl">
                     {product.detailsSection.description}
                   </p>
+                  
                   {/* Feature pills */}
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-3 md:gap-4">
                     {product.features.map((f) => (
-                      <span
+                      <div
                         key={f}
-                        className="px-4 py-2 rounded-full text-sm font-semibold border"
+                        className="px-5 py-2.5 md:px-6 md:py-3 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 md:gap-3 transition-transform hover:scale-105"
                         style={{
-                          borderColor: `${product.themeColor}50`,
-                          color: product.themeColor,
-                          background: `${product.themeColor}10`,
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          background: "rgba(255,255,255,0.03)",
+                          backdropFilter: "blur(10px)",
                         }}
                       >
-                        ✓ {f}
-                      </span>
+                        <span style={{ color: product.themeColor }}>✦</span>
+                        <span className="text-white/90">{f}</span>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
 
-                {/* Right — Decorative visual card */}
+                {/* Right — Glassmorphic Visual Card */}
                 <motion.div
                   variants={SLIDE_UP}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.15 }}
-                  className="relative"
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ delay: 0.2 }}
+                  className="lg:col-span-5 relative mt-8 lg:mt-0"
                 >
                   <div
-                    className="rounded-3xl p-10 relative overflow-hidden"
+                    className="absolute inset-0 blur-[80px] lg:blur-[100px] opacity-40 rounded-full"
+                    style={{ background: product.themeColor }}
+                  />
+                  <div
+                    className="rounded-[2rem] lg:rounded-[2.5rem] p-8 md:p-10 lg:p-14 relative overflow-hidden backdrop-blur-xl"
                     style={{
-                      background: `linear-gradient(135deg, ${product.themeColor}15 0%, transparent 60%)`,
-                      border: `1px solid ${product.themeColor}20`,
+                      background: "rgba(20,20,20,0.4)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
                     }}
                   >
-                    {/* Large title text as background element */}
                     <div
-                      className="absolute -right-6 -bottom-6 text-[180px] font-black leading-none select-none pointer-events-none"
-                      style={{ color: `${product.themeColor}08` }}
+                      className="absolute -right-10 -bottom-10 text-[150px] lg:text-[200px] font-black leading-none select-none pointer-events-none opacity-20 rotate-[-15deg]"
                     >
                       {product.id === "mango" ? "🥭" : product.id === "chocolate" ? "🍫" : "🍎"}
                     </div>
                     <div className="relative z-10">
+                      <p className="text-xs lg:text-sm uppercase tracking-widest text-white/50 mb-2 font-bold">Premium Quality</p>
                       <p
-                        className="text-6xl font-black mb-4"
-                        style={{ color: product.themeColor }}
+                        className="text-5xl md:text-6xl lg:text-7xl font-black mb-2 lg:mb-4 tracking-tighter"
+                        style={{ color: "#fff" }}
                       >
                         {product.buyNowSection.price}
                       </p>
-                      <p className="text-white/40 text-sm mb-8">{product.buyNowSection.unit}</p>
-                      <div className="space-y-4">
+                      <p className="text-white/60 text-sm lg:text-base mb-8 lg:mb-10 font-medium">{product.buyNowSection.unit}</p>
+                      
+                      <div className="space-y-4 lg:space-y-5">
                         {product.buyNowSection.processingParams.map((param) => (
-                          <div key={param} className="flex items-center gap-3">
+                          <div key={param} className="flex items-center gap-3 lg:gap-4">
                             <div
-                              className="w-2 h-2 rounded-full flex-shrink-0"
-                              style={{ background: product.themeColor }}
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ background: product.themeColor, boxShadow: `0 0 10px ${product.themeColor}` }}
                             />
-                            <span className="text-white/70 text-sm font-medium">{param}</span>
+                            <span className="text-white/80 text-xs lg:text-sm font-semibold tracking-wide uppercase">{param}</span>
                           </div>
                         ))}
                       </div>
@@ -212,36 +288,32 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ===== FRESHNESS SECTION ===== */}
-          <section
-            className="py-24 px-6"
-            style={{
-              background: `linear-gradient(180deg, transparent 0%, ${product.themeColor}08 50%, transparent 100%)`,
-            }}
-          >
-            <div className="max-w-4xl mx-auto text-center">
+          {/* ===== PREMIUM FRESHNESS SECTION ===== */}
+          <section className="py-20 lg:py-32 px-6 relative">
+            <div className="max-w-7xl mx-auto">
               <motion.div
                 variants={SLIDE_UP}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
+                className="text-center mb-16 lg:mb-20"
               >
                 <span
-                  className="text-xs font-bold uppercase tracking-[0.25em] mb-4 inline-block"
+                  className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em] mb-4 inline-block"
                   style={{ color: product.themeColor }}
                 >
                   Our Process
                 </span>
-                <h2 className="text-4xl md:text-6xl font-black leading-tight mb-6 text-white">
+                <h2 className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight mb-4 md:mb-6 text-white tracking-tight">
                   {product.freshnessSection.title}
                 </h2>
-                <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto mb-16">
+                <p className="text-white/60 text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto font-medium">
                   {product.freshnessSection.description}
                 </p>
               </motion.div>
 
-              {/* Process steps */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Process steps - Premium Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
                 {[
                   { step: "01", title: "Harvest", desc: "Sourced at peak ripeness from certified farms" },
                   { step: "02", title: "Press", desc: "Cold-pressed within hours to lock in nutrients" },
@@ -253,156 +325,154 @@ export default function Home() {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="relative p-8 rounded-2xl text-left"
+                    transition={{ delay: i * 0.15 }}
+                    className="relative p-8 lg:p-12 rounded-[1.5rem] lg:rounded-[2rem] text-left overflow-hidden group hover:-translate-y-2 transition-transform duration-500"
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "rgba(25,25,25,0.4)",
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      backdropFilter: "blur(20px)",
                     }}
                   >
+                    {/* Hover Glow */}
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                      style={{ background: `radial-gradient(circle at top right, ${product.themeColor}, transparent 70%)` }}
+                    />
+                    
                     <div
-                      className="text-5xl font-black mb-4 opacity-20"
-                      style={{ color: product.themeColor }}
+                      className="text-6xl md:text-7xl lg:text-8xl font-black mb-4 lg:mb-6 transition-colors duration-500"
+                      style={{ 
+                        color: "transparent", 
+                        WebkitTextStroke: "1px rgba(255,255,255,0.1)",
+                      }}
                     >
                       {item.step}
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                    <p className="text-white/50 text-sm leading-relaxed">{item.desc}</p>
+                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 lg:mb-3 tracking-tight">{item.title}</h3>
+                    <p className="text-white/50 text-sm lg:text-base font-medium leading-relaxed">{item.desc}</p>
                   </motion.div>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* ===== BUY NOW SECTION ===== */}
-          <section className="py-24 px-6">
-            <div className="max-w-5xl mx-auto">
+          {/* ===== PREMIUM BUY NOW SECTION ===== */}
+          <section className="py-20 lg:py-32 px-6 relative">
+            <div className="max-w-6xl mx-auto">
               <motion.div
                 variants={SLIDE_UP}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                className="rounded-3xl p-10 md:p-16 relative overflow-hidden"
+                className="rounded-[2rem] lg:rounded-[3rem] p-6 md:p-12 lg:p-20 relative overflow-hidden"
                 style={{
-                  background: `linear-gradient(135deg, ${product.themeColor}20 0%, rgba(10,10,10,0.9) 60%)`,
-                  border: `1px solid ${product.themeColor}25`,
+                  background: "rgba(15,15,15,0.8)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: "0 20px 80px rgba(0,0,0,0.8)",
+                  backdropFilter: "blur(40px)",
                 }}
               >
-                {/* BG Blur blob */}
+                {/* BG Ambient Glow */}
                 <div
-                  className="absolute -top-20 -left-20 w-80 h-80 rounded-full blur-3xl pointer-events-none"
-                  style={{ background: `${product.themeColor}15` }}
+                  className="absolute top-0 right-0 w-[400px] lg:w-[800px] h-[400px] lg:h-[800px] rounded-full blur-[80px] lg:blur-[120px] pointer-events-none opacity-20 translate-x-1/3 -translate-y-1/3"
+                  style={{ background: product.themeColor }}
                 />
 
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                  {/* Left */}
-                  <div>
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                  {/* Left: Purchase Interface */}
+                  <div className="lg:col-span-7">
                     <span
-                      className="text-xs font-bold uppercase tracking-[0.25em] mb-3 inline-block"
+                      className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em] mb-4 inline-block"
                       style={{ color: product.themeColor }}
                     >
                       Order Now
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-black text-white mb-2">
+                    <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-white mb-3 lg:mb-4 tracking-tight">
                       {product.name}
                     </h2>
-                    <p className="text-white/50 mb-8">{product.subName}</p>
+                    <p className="text-white/60 text-lg lg:text-xl font-medium mb-8 lg:mb-10">{product.subName}</p>
 
                     {/* Price */}
-                    <div className="flex items-baseline gap-3 mb-8">
-                      <span
-                        className="text-6xl font-black"
-                        style={{ color: product.themeColor }}
-                      >
+                    <div className="flex items-end gap-3 lg:gap-4 mb-8 lg:mb-10">
+                      <span className="text-5xl md:text-6xl lg:text-7xl font-black leading-none text-white tracking-tighter">
                         {product.buyNowSection.price}
                       </span>
-                      <span className="text-white/40 text-sm">{product.buyNowSection.unit}</span>
+                      <span className="text-white/40 text-sm lg:text-base font-medium mb-1 lg:mb-2">{product.buyNowSection.unit}</span>
                     </div>
 
-                    {/* Quantity */}
-                    <div className="flex items-center gap-4 mb-8">
-                      <span className="text-white/60 text-sm font-medium">Quantity:</span>
+                    {/* Quantity Selector */}
+                    <div className="flex items-center gap-4 lg:gap-6 mb-8 lg:mb-10">
+                      <span className="text-white/50 text-xs lg:text-sm font-bold uppercase tracking-widest">Quantity</span>
                       <div
-                        className="flex items-center gap-0 rounded-xl overflow-hidden border"
-                        style={{ borderColor: "rgba(255,255,255,0.1)" }}
+                        className="flex items-center rounded-full overflow-hidden"
+                        style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)" }}
                       >
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors duration-200 font-bold text-lg"
+                          className="w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-bold text-lg lg:text-xl"
                         >
                           −
                         </button>
-                        <span className="w-12 text-center text-white font-bold text-lg">
+                        <span className="w-10 lg:w-12 text-center text-white font-bold text-base lg:text-lg">
                           {quantity}
                         </span>
                         <button
                           onClick={() => setQuantity(quantity + 1)}
-                          className="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors duration-200 font-bold text-lg"
+                          className="w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-bold text-lg lg:text-xl"
                         >
                           +
                         </button>
                       </div>
                     </div>
 
-                    {/* Add to cart button */}
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleAddToCart}
-                      className="w-full py-5 rounded-2xl text-base font-bold text-white relative overflow-hidden mb-4"
-                      style={{
-                        background: addedToCart
-                          ? "linear-gradient(135deg, #22c55e, #16a34a)"
-                          : product.gradient,
-                        boxShadow: addedToCart
-                          ? "0 0 40px rgba(34,197,94,0.3)"
-                          : `0 0 40px ${product.themeColor}40`,
-                        transition: "background 0.3s ease, box-shadow 0.3s ease",
-                      }}
-                    >
-                      <AnimatePresence mode="wait">
-                        {addedToCart ? (
-                          <motion.span
-                            key="added"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            ✓ Added to Cart!
-                          </motion.span>
-                        ) : (
-                          <motion.span
-                            key="add"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            Add {quantity} to Cart — ₹{parseInt(product.buyNowSection.price.replace("₹", "")) * quantity}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </motion.button>
-
-                    <button className="w-full py-5 rounded-2xl text-base font-bold text-white border border-white/15 hover:border-white/30 transition-colors duration-200">
-                      Subscribe & Save 20%
-                    </button>
+                    {/* Buttons */}
+                    <div className="space-y-3 lg:space-y-4">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleAddToCart}
+                        className="w-full py-4 lg:py-5 rounded-full text-xs lg:text-sm font-bold uppercase tracking-[0.1em] text-white relative overflow-hidden"
+                        style={{
+                          background: addedToCart
+                            ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                            : product.gradient,
+                          boxShadow: addedToCart
+                            ? "0 10px 30px rgba(34,197,94,0.3)"
+                            : `0 10px 30px ${product.themeColor}40`,
+                        }}
+                      >
+                        <AnimatePresence mode="wait">
+                          {addedToCart ? (
+                            <motion.span key="added" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                              ✓ Added to Cart
+                            </motion.span>
+                          ) : (
+                            <motion.span key="add" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                              Add {quantity} to Cart — ₹{parseInt(product.buyNowSection.price.replace("₹", "")) * quantity}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </motion.button>
+                      <button 
+                        className="w-full py-4 lg:py-5 rounded-full text-xs lg:text-sm font-bold uppercase tracking-[0.1em] text-white transition-colors duration-300 hover:bg-white/5"
+                        style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+                      >
+                        Subscribe & Save 20%
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Right — Delivery info */}
-                  <div className="space-y-6">
-                    {/* Processing tags */}
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-white/30 font-semibold mb-3">Processing</p>
+                  {/* Right: Info Panels */}
+                  <div className="lg:col-span-5 space-y-3 lg:space-y-4">
+                    {/* Processing */}
+                    <div className="p-6 lg:p-8 rounded-[1.5rem] lg:rounded-3xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-3 lg:mb-4">Processing</p>
                       <div className="flex flex-wrap gap-2">
                         {product.buyNowSection.processingParams.map((param) => (
                           <span
                             key={param}
-                            className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                            style={{
-                              background: `${product.themeColor}15`,
-                              color: product.themeColor,
-                              border: `1px solid ${product.themeColor}30`,
-                            }}
+                            className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider text-white"
+                            style={{ background: "rgba(255,255,255,0.08)" }}
                           >
                             {param}
                           </span>
@@ -411,31 +481,25 @@ export default function Home() {
                     </div>
 
                     {/* Delivery */}
-                    <div
-                      className="p-5 rounded-xl"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">🚚</span>
+                    <div className="p-6 lg:p-8 rounded-[1.5rem] lg:rounded-3xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-start gap-3 lg:gap-4">
+                        <span className="text-xl lg:text-2xl grayscale opacity-70">🚚</span>
                         <div>
-                          <p className="text-sm font-semibold text-white mb-1">Delivery</p>
-                          <p className="text-sm text-white/50 leading-relaxed">
+                          <p className="text-xs lg:text-sm font-bold text-white mb-1 lg:mb-2 uppercase tracking-wide">Delivery</p>
+                          <p className="text-xs lg:text-sm text-white/50 leading-relaxed font-medium">
                             {product.buyNowSection.deliveryPromise}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Returns */}
-                    <div
-                      className="p-5 rounded-xl"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">🛡️</span>
+                    {/* Guarantee */}
+                    <div className="p-6 lg:p-8 rounded-[1.5rem] lg:rounded-3xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-start gap-3 lg:gap-4">
+                        <span className="text-xl lg:text-2xl grayscale opacity-70">🛡️</span>
                         <div>
-                          <p className="text-sm font-semibold text-white mb-1">Guarantee</p>
-                          <p className="text-sm text-white/50 leading-relaxed">
+                          <p className="text-xs lg:text-sm font-bold text-white mb-1 lg:mb-2 uppercase tracking-wide">Guarantee</p>
+                          <p className="text-xs lg:text-sm text-white/50 leading-relaxed font-medium">
                             {product.buyNowSection.returnPolicy}
                           </p>
                         </div>
